@@ -1,6 +1,7 @@
 package components
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/viewport"
@@ -12,7 +13,6 @@ import (
 // ResultViewer displays command output in a scrollable viewport
 type ResultViewer struct {
 	title    string
-	content  string
 	viewport viewport.Model
 	visible  bool
 	ready    bool
@@ -86,7 +86,7 @@ func (r ResultViewer) View() string {
 	if r.viewport.TotalLineCount() > r.viewport.Height {
 		percent := int(float64(r.viewport.YOffset) / float64(r.viewport.TotalLineCount()-r.viewport.Height) * 100)
 		scrollInfo = lipgloss.NewStyle().Foreground(styles.Secondary).Render(
-			" " + string(rune(0x2503)) + " " + itoa(percent) + "%",
+			" | " + strconv.Itoa(percent) + "%",
 		)
 	}
 
@@ -104,20 +104,13 @@ func (r ResultViewer) View() string {
 
 func (r *ResultViewer) Show(title, content string, width, height int) {
 	r.title = title
-	r.content = content
 	r.width = width
 	r.height = height
 	r.visible = true
 
-	// Initialize or update viewport
-	viewportHeight := height - 6 // Account for title, footer, and borders
-	if viewportHeight < 5 {
-		viewportHeight = 5
-	}
-	viewportWidth := width - 6 // Account for borders and padding
-	if viewportWidth < 20 {
-		viewportWidth = 20
-	}
+	// Initialize viewport
+	viewportHeight := max(height-6, 5)
+	viewportWidth := max(width-6, 20)
 
 	r.viewport = viewport.New(viewportWidth, viewportHeight)
 	r.viewport.SetContent(content)
@@ -139,20 +132,4 @@ func (r *ResultViewer) SetSize(width, height int) {
 		r.viewport.Width = width - 6
 		r.viewport.Height = height - 6
 	}
-}
-
-// Helper to convert int to string without fmt
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	if n < 0 {
-		return "-" + itoa(-n)
-	}
-	var digits []byte
-	for n > 0 {
-		digits = append([]byte{byte('0' + n%10)}, digits...)
-		n /= 10
-	}
-	return string(digits)
 }

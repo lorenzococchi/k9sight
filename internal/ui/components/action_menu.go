@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/doganarif/k9sight/internal/ui/styles"
@@ -23,8 +22,6 @@ type ActionMenu struct {
 	items    []MenuItem
 	selected int
 	visible  bool
-	width    int
-	height   int
 }
 
 // ActionMenuResult is returned when an action is selected
@@ -165,11 +162,6 @@ func (m ActionMenu) IsVisible() bool {
 	return m.visible
 }
 
-func (m *ActionMenu) SetSize(width, height int) {
-	m.width = width
-	m.height = height
-}
-
 // KubectlCommands generates common kubectl commands for a pod
 func KubectlCommands(namespace, podName, containerName string, containers []string) []MenuItem {
 	items := []MenuItem{
@@ -231,11 +223,6 @@ func KubectlCommands(namespace, podName, containerName string, containers []stri
 	}
 
 	return items
-}
-
-// Verify ActionMenu satisfies common patterns
-func (m ActionMenu) Matches(msg tea.KeyMsg, binding key.Binding) bool {
-	return key.Matches(msg, binding)
 }
 
 // PodActionItem represents an action that can be taken on a pod

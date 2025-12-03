@@ -28,7 +28,6 @@ type Dashboard struct {
 	events        components.EventsPanel
 	metrics       components.MetricsPanel
 	manifest      components.ManifestPanel
-	statusBar     components.StatusBar
 	breadcrumb    components.Breadcrumb
 	help          components.HelpPanel
 	actionMenu    components.ActionMenu
@@ -52,7 +51,6 @@ func NewDashboard() Dashboard {
 		events:        components.NewEventsPanel(),
 		metrics:       components.NewMetricsPanel(),
 		manifest:      components.NewManifestPanel(),
-		statusBar:     components.NewStatusBar(),
 		breadcrumb:    components.NewBreadcrumb(),
 		help:          components.NewHelpPanel(),
 		actionMenu:    components.NewActionMenu(),
@@ -393,11 +391,11 @@ func (d Dashboard) View() string {
 
 	// Render action menu as overlay if visible
 	if d.actionMenu.IsVisible() {
-		return d.renderFloatingMenu(content)
+		return d.renderFloatingDialog(d.actionMenu.View())
 	}
 
 	if d.help.IsVisible() {
-		return d.renderFloatingHelp(content)
+		return d.renderFloatingDialog(d.help.View())
 	}
 
 	return content
@@ -464,36 +462,6 @@ func (d Dashboard) wrapPanel(content string, width, height int, active bool) str
 		Render(content)
 }
 
-func (d Dashboard) renderFloatingHelp(base string) string {
-	// Get the help content
-	helpContent := d.help.View()
-
-	// Use lipgloss.Place to center the help modal over the content
-	return lipgloss.Place(
-		d.width,
-		d.height-4,
-		lipgloss.Center,
-		lipgloss.Center,
-		helpContent,
-		lipgloss.WithWhitespaceChars(" "),
-		lipgloss.WithWhitespaceForeground(styles.Background),
-	)
-}
-
-func (d Dashboard) renderFloatingMenu(base string) string {
-	menuContent := d.actionMenu.View()
-
-	return lipgloss.Place(
-		d.width,
-		d.height-4,
-		lipgloss.Center,
-		lipgloss.Center,
-		menuContent,
-		lipgloss.WithWhitespaceChars(" "),
-		lipgloss.WithWhitespaceForeground(styles.Background),
-	)
-}
-
 func (d Dashboard) renderFloatingDialog(dialogContent string) string {
 	return lipgloss.Place(
 		d.width,
@@ -542,7 +510,6 @@ func (d *Dashboard) SetHelpers(helpers []k8s.DebugHelper) {
 func (d *Dashboard) SetSize(width, height int) {
 	d.width = width
 	d.height = height
-	d.statusBar.SetWidth(width)
 	d.breadcrumb.SetWidth(width)
 	d.help.SetSize(width, height)
 }
@@ -553,16 +520,10 @@ func (d *Dashboard) SetBreadcrumb(items ...string) {
 
 func (d *Dashboard) SetContext(ctx string) {
 	d.context = ctx
-	d.statusBar.SetContext(ctx)
 }
 
 func (d *Dashboard) SetNamespace(ns string) {
 	d.namespace = ns
-	d.statusBar.SetNamespace(ns)
-}
-
-func (d *Dashboard) SetResource(res string) {
-	d.statusBar.SetResource(res)
 }
 
 func (d Dashboard) Focus() PanelFocus {

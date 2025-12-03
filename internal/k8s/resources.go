@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -469,7 +470,7 @@ func GetRelatedResources(ctx context.Context, clientset *kubernetes.Clientset, p
 					Name:      svc.Name,
 					Type:      string(svc.Spec.Type),
 					ClusterIP: svc.Spec.ClusterIP,
-					Ports:     joinStrings(ports, ", "),
+					Ports:     strings.Join(ports, ", "),
 					Endpoints: endpointCount,
 				})
 			}
@@ -492,8 +493,8 @@ func GetRelatedResources(ctx context.Context, clientset *kubernetes.Clientset, p
 					}
 					related.Ingresses = append(related.Ingresses, IngressInfo{
 						Name:  ing.Name,
-						Hosts: joinStrings(hosts, ", "),
-						Paths: joinStrings(paths, ", "),
+						Hosts: strings.Join(hosts, ", "),
+						Paths: strings.Join(paths, ", "),
 					})
 				}
 			}
@@ -546,17 +547,6 @@ func ingressReferencesService(ing networkingv1.Ingress, svcName string) bool {
 		}
 	}
 	return false
-}
-
-func joinStrings(s []string, sep string) string {
-	if len(s) == 0 {
-		return ""
-	}
-	result := s[0]
-	for i := 1; i < len(s); i++ {
-		result += sep + s[i]
-	}
-	return result
 }
 
 func GetDeployment(ctx context.Context, clientset *kubernetes.Clientset, namespace, name string) (*appsv1.Deployment, error) {
